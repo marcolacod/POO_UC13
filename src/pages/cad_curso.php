@@ -1,37 +1,39 @@
 <?php
-require __DIR__ . "/../classes/curso.php";
-// Inicializa as variaveis
-$titulo = $horas = $dias = $aluno = "";
+require_once "src/classes/curso.php";
+ 
+// Inicializa as variáveis
+$titulo = $dias = $horas = "";
 $cursoCriado = false;
  
 //Cadastrando
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $titulo = trim($_POST["titulo"]);
-    $horas = trim($_POST["horas"]);
-    $dias = trim($_POST["dias"]);
-    $aluno = trim($_POST["aluno"]);
-    try {
-        $curso = new Curso($titulo, $horas, $dias, $aluno);
-        $cursoCriado = true;
-    } catch (Exception $e) {
-        echo "<div class='alert alert-danger mt-3'>" . $e->getMessage() . "</div>";
-    }
-}
+    $titulo = $_POST["titulo"];
+    $dias = $_POST["dias"];
+    $horas = $_POST["horas"];
+   
+ try {
+$curso = new Curso($titulo, $dias, $horas);
+    $cursoCriado = $curso->cadastrar();
  
+    if ($cursoCriado) {
+        echo "<div class='alert alert-success'>Cadastro efetuado com sucesso</div>";
+    } else {
+        echo "<div class='alert alert-danger'>Erro ao cadastrar a escola</div>";
+    }
+     } catch (Exception $e) {
+        echo "<div class='alert alert-danger mt-3'>" . $e->getMessage() . "</div>";
+}
+   }
+   $cursos= Curso::listar();
 ?>
+ 
 <h2>Cadastro de Curso</h2>
  
 <form method="post" class="row g-3 mb-4">
     <div class="col-md-4">
-        <label for="titulo" class="form-label">Título:</label>
+        <label for="titulo" class="form-label">Titulo:</label>
         <input type="text" name="titulo" id="titulo" class="form-control"
             value="<?= htmlspecialchars($titulo) ?>">
-    </div>
- 
-    <div class="col-md-2">
-        <label for="horas" class="form-label">Horas:</label>
-        <input type="number" name="horas" id="horas" class="form-control"
-            value="<?= htmlspecialchars($horas) ?>">
     </div>
  
     <div class="col-md-2">
@@ -40,28 +42,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             value="<?= htmlspecialchars($dias) ?>">
     </div>
  
-    <div class="col-md-4">
-        <label for="aluno" class="form-label">Aluno:</label>
-        <input type="text" name="aluno" id="aluno" class="form-control"
-            value="<?= htmlspecialchars($aluno) ?>">
+    <div class="col-md-2">
+        <label for="horas" class="form-label">Horas:</label>
+        <input type="text" name="horas" id="horas" class="form-control"
+            value="<?= htmlspecialchars($horas) ?>">
     </div>
  
     <div class="col-12">
         <button type="submit" class="btn btn-primary">Cadastrar</button>
     </div>
 </form>
- 
-<!-- <?php if ($alunoCriado): ?>
-    <div class="alert alert-success mt-3">
-        Aluno cadastrado com sucesso!
-    </div>
-    <h3>Dados do Aluno</h3>
-    <?php $Aluno->exibirDados(); ?>
-<?php endif; ?> -->
- 
-<?php
-if ($cursoCriado) {
-    echo "<h3>Resultado:</h3>";
-    $curso->exibirDados();
-}
-?>
+<h3>Lista de Cursos</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Título</th>
+            <th>Horas</th>
+            <th>Dias</th>
+        </tr>
+    </thead>
+    <tbody>
+       <?php if ($cursos && count($cursos) > 0): ?>
+            <?php foreach ($cursos as $curso): ?>
+                <tr>
+                    <td><?= htmlspecialchars($curso['titulo']) ?></td>
+                    <td><?= htmlspecialchars($curso['horas']) ?></td>
+                    <td><?= htmlspecialchars($curso['dias']) ?></td>
+                </tr>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <tr>
+                <td colspan="3" class="text-center">Nenhum curso cadastrado.</td>
+            </tr>
+        <?php endif; ?>
+    </tbody>
+</table>

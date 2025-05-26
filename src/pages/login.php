@@ -1,6 +1,53 @@
 <?php
+// Configuração de conexão com o banco de dados
+$host = 'localhost';
+$db   = 'projeto_poo'; // Substitua pelo nome real do seu banco
+$user = 'root';          // Ou o usuário configurado
+$pass = '';              // Ou a senha do seu banco
+$charset = 'utf8mb4';
+
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+$options = [
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+];
+
+try {
+    $pdo = new PDO($dsn, $user, $pass, $options);
+} catch (PDOException $e) {
+    die("Erro de conexão: " . $e->getMessage());
+}
+
+// Verifica se os dados foram enviados via POST
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    // Sanitiza e valida os dados
+    $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
+    $password = $_POST['password'];
+
+    if (!$email || empty($password)) {
+        echo "E-mail ou senha inválidos.";
+        exit;
+    }
+
+    // Consulta no banco
+    $stmt = $pdo->prepare("SELECT * FROM login WHERE email = ?");
+    $stmt->execute([$email]);
+    $user = $stmt->fetch();
+
+    if ($user && ($password == $user['senha'])) {
+        // Login bem-sucedido
+        session_start();
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['email'] = $user['email'];
+
+        header("Location: /concurso/poo"); // Redireciona para a página principal
+        exit;
+    } else {
+        // Login falhou
+        echo "<p style='color: red; text-align: center;'>E-mail ou senha incorretos.</p>";
+    }
+}
 ?>
- 
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -14,7 +61,7 @@
 <main class="d-flex justify-content-center align-items-center flex-grow-1">
     <div class="card shadow-sm p-4" style="width: 100%; max-width: 400px;">
         <h2 class="text-center mb-4">Acesso ao Sistema</h2>
-        <form action="process_login.php" method="post">
+        <form method="post">
             <div class="mb-3">
                 <label for="email" class="form-label">Usuário (e-mail):</label>
                 <input type="email" name="email" id="email" class="form-control" placeholder="Digite seu e-mail" required>

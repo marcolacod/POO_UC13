@@ -1,23 +1,27 @@
 <?php
-require __DIR__ . "/../classes/escola.php";
+require_once "src/classes/escola.php";
+ 
 // Inicializa as variáveis
-$nome = $endereco = $cidade = $cnpj = ""; // Corrigido $cidedade para $cidade
-$escolaCriada = false;
+$nome = $endereco = $cidade = $cnpj = "";
+$escolaCriado = false;
  
-// Cadastrando
+//Cadastrando
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $nome = isset($_POST["nome"]) ? trim($_POST["nome"]) : "";
-    $endereco = isset($_POST["endereco"]) ? trim($_POST["endereco"]) : "";
-    $cidade = isset($_POST["cidade"]) ? trim($_POST["cidade"]) : "";
-    $cnpj = isset($_POST["cnpj"]) ? trim($_POST["cnpj"]) : "";
+    $nome = $_POST["nome"];
+    $endereco = $_POST["endereco"];
+    $cnpj = $_POST["cnpj"];
+    $cidade = $_POST["cidade"];
+   
+    $escola = new Escola($nome, $endereco, $cidade, $cnpj);
+    $escolaCriado = $escola->cadastrar();
  
-    try {
-        $escola = new Escola($nome, $endereco, $cidade, $cnpj);
-        $escolaCriada = true;
-    } catch (Exception $e) {
-        echo "<div class='alert alert-danger mt-3'>" . $e->getMessage() . "</div>";
+    if ($escolaCriado) {
+        echo "<div class='alert alert-success'>Cadastro efetuado com sucesso</div>";
+    } else {
+        echo "<div class='alert alert-danger'>Erro ao cadastrar a escola</div>";
     }
 }
+$escolas = Escola::listar(); // Adicione esta linha
 ?>
  
 <h2>Cadastro de Escola</h2>
@@ -29,22 +33,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             value="<?= htmlspecialchars($nome) ?>">
     </div>
  
+    <div class="col-md-2">
+        <label for="cnpj" class="form-label">CNPJ:</label>
+        <input type="text" name="cnpj" id="cnpj" class="form-control"
+            value="<?= htmlspecialchars($cnpj) ?>">
+    </div>
+ 
     <div class="col-md-4">
         <label for="endereco" class="form-label">Endereço:</label>
         <input type="text" name="endereco" id="endereco" class="form-control"
             value="<?= htmlspecialchars($endereco) ?>">
     </div>
  
-    <div class="col-md-4">
+    <div class="col-md-2">
         <label for="cidade" class="form-label">Cidade:</label>
         <input type="text" name="cidade" id="cidade" class="form-control"
             value="<?= htmlspecialchars($cidade) ?>">
-    </div>
- 
-    <div class="col-md-4">
-        <label for="cnpj" class="form-label">CNPJ:</label>
-        <input type="text" name="cnpj" id="cnpj" class="form-control"
-            value="<?= htmlspecialchars($cnpj) ?>">
     </div>
  
     <div class="col-12">
@@ -52,9 +56,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
 </form>
  
-<?php
-if ($escolaCriada) {
-    echo "<h3>Resultado:</h3>";
-    $escola->exibirDados();
-}
-?>
+<h3>Lista de Escolas</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>CNPJ</th>
+            <th>Endereço</th>
+            <th>Cidade</th>
+        </tr>
+    </thead>
+    <tbody>
+       <?php if ($escolas && count($escolas) > 0): ?>
+            <?php foreach ($escolas as $escola): ?>
+                <tr>
+                    <td><?= htmlspecialchars($escola['nome']) ?></td>
+                    <td><?= htmlspecialchars($escola['cnpj']) ?></td>
+                    <td><?= htmlspecialchars($escola['endereco']) ?></td>
+                    <td><?= htmlspecialchars($escola['cidade']) ?></td>
+                </tr>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <tr>
+                <td colspan="4" class="text-center">Nenhuma escola cadastrada.</td>
+            </tr>
+        <?php endif; ?>
+    </tbody>
+</table>
+ 

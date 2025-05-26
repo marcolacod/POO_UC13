@@ -1,5 +1,7 @@
 <?php
  
+require_once "db/db.php";
+ 
 class Escola {
     public $nome;
     public $endereco;
@@ -25,7 +27,6 @@ class Escola {
         $this->cidade = $cidade;
         $this->cnpj = $cnpj;
     }
-       
  
     // Getter do CPF (encapsulamento)
     public function getCnpj() {
@@ -34,9 +35,47 @@ class Escola {
  
     // Método para exibir os dados
     public function exibirDados() {
-        echo "<p>Nome: <strong>$this->nome</strong><br>";
+        echo "<p>Nome da escola: <strong>$this->nome</strong><br>";
         echo "Endereço: <strong>$this->endereco</strong><br>";
         echo "Cidade: <strong>$this->cidade</strong><br>";
         echo "CNPJ: <strong>" . $this->getCnpj() . "</strong></p>";
     }
+ 
+    // Método para cadastrar a escola no banco de dados
+    public function cadastrar() {
+        // Conexão com o banco de dados
+        $database = new Database();
+        $conn = $database->getConnection();
+ 
+        // Preparar a consulta SQL
+        $query = "INSERT INTO escola (nome, endereco, cidade, cnpj) VALUES (:nome, :endereco, :cidade, :cnpj)";
+        $stmt = $conn->prepare($query);
+ 
+        // Bind dos parâmetros
+        $stmt->bindParam(':nome', $this->nome);
+        $stmt->bindParam(':endereco', $this->endereco);
+        $stmt->bindParam(':cidade', $this->cidade);
+        $stmt->bindParam(':cnpj', $this->cnpj);
+ 
+        // Executar a consulta
+        if ($stmt->execute()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    public static function listar() {
+        // Conexão com o banco de dados
+        $database = new Database();
+        $conn = $database->getConnection();
+ 
+        // Preparar a consulta SQL
+        $query = "SELECT * FROM escola";
+        $stmt = $conn->prepare($query);
+        $stmt->execute();
+ 
+        // Retornar os resultados
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
 }
